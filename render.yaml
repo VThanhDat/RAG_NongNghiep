@@ -31,8 +31,9 @@ services:
     #   sizeGB: 1
 
   # ── Frontend: React (Static Site) ──────────────────────────────
-  - type: static
+  - type: web
     name: rag-nong-nghiep
+    runtime: static
     region: singapore
     plan: free
     rootDir: frontend
