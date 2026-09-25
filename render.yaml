@@ -5,6 +5,7 @@ services:
     runtime: python
     region: singapore          # gần VN nhất trên Render
     plan: free
+    pythonVersion: "3.11.9"    # pin cứng Python, không đọc runtime.txt
     rootDir: .
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn api.app.main:app --host 0.0.0.0 --port $PORT
