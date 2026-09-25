@@ -1,0 +1,102 @@
+# RAG Nong Nghiep configuration
+
+data:
+  input_dir: ./data/uploads
+  language: both
+
+indexing:
+  loader:
+    pdf_strategy: pypdf
+    ocr: never
+    extract_tables: true
+
+  chunking:
+    strategy: recursive
+    chunk_size: 1000
+    chunk_overlap: 150
+    token_encoding: cl100k_base
+    merge_tiny_chunks: true
+    min_chunk_tokens: 80
+    max_chunk_tokens: 1000
+    deduplicate_chunks: true
+    deduplicate_method: exact
+
+  embedding:
+    provider: cohere
+    model_name: embed-v4.0
+    batch_size: 96
+    output_dimension: 1024
+    expected_dimension: 1024
+    metric: cosine
+    normalize_embeddings: true
+    normalize_dense: true
+    min_text_chars: 8
+    cache_embeddings: true
+    cache_path: .cache/cohere_embeddings.json
+    enable_sparse: true
+    sparse_method: bm25
+    strict_metadata: false
+
+  vector_db:
+    provider: pinecone
+    collection_name: rag_collection_cohere
+    index_name: rag-nong-nghiep-cohere
+    namespace: rag_collection_cohere
+    documents_path: ./storage/pinecone/documents.jsonl
+    dimension: 1024
+    metric: cosine
+    # Pinecone rebuilds the demo knowledge base from the current PDF set.
+    force_reindex: true
+    strict_metadata: false
+    search_score_threshold: 0.3
+
+  metadata:
+    default_group: general
+
+query_pipeline:
+  generation:
+    provider: gemini
+    model_name: gemini-3.6-flash
+    temperature: 0.0
+    max_tokens: 2048
+    streaming: false
+
+  pre_retrieval:
+    # Simple, offline, deterministic query preparation.
+    # Supported transformations: clean, validate, context, language, intent.
+    transformations:
+      - clean
+      - validate
+      - context
+      - language
+      - intent
+
+    clean_lowercase: false
+    max_query_chars: 500
+    max_repeated_char: 8
+
+  retrieval:
+    strategy: hybrid
+    top_k: 20
+    candidate_k: 60
+    rrf_k: 60
+    score_threshold: 0.3
+
+  post_retrieval:
+    top_n: 5
+    score_threshold: 0.0
+    apply_redundancy: true
+    redundancy_threshold: 0.9
+    context_ordering: relevance
+    apply_toc_filter: true
+    toc_dot_ratio: 0.15
+    toc_short_line_ratio: 0.70
+    toc_min_chars: 200
+    toc_early_page_limit: 3
+
+  prompt:
+    template: citation
+    language: vi
+    max_context_chars: 10000
+    validate_citations: true
+    system_instruction: ""

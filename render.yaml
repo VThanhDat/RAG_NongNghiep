@@ -1,0 +1,49 @@
+services:
+  # ── Backend: FastAPI ────────────────────────────────────────────
+  - type: web
+    name: rag-nong-nghiep-api
+    runtime: python
+    region: singapore          # gần VN nhất trên Render
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false            # nhập tay trên Render dashboard
+      - key: COHERE_API_KEY
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: PINECONE_INDEX_NAME
+        value: rag-nong-nghiep-cohere
+      - key: PINECONE_NAMESPACE
+        value: rag_collection_cohere
+      - key: CORS_ORIGINS
+        # URL frontend (Render tạo tự động theo tên service bên dưới)
+        value: https://rag-nong-nghiep.onrender.com
+    # ── Disk chỉ khả dụng ở Paid plan ──────────────────────────
+    # Nếu dùng Free plan: BM25 index sẽ bị reset sau mỗi lần deploy.
+    # Upgrade lên Starter ($7/tháng) và bỏ comment 4 dòng dưới:
+    # disk:
+    #   name: rag-storage
+    #   mountPath: /opt/render/project/src/storage
+    #   sizeGB: 1
+
+  # ── Frontend: React (Static Site) ──────────────────────────────
+  - type: static
+    name: rag-nong-nghiep
+    region: singapore
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      # Trỏ vào URL backend ở trên
+      - key: VITE_API_BASE_URL
+        value: https://rag-nong-nghiep-api.onrender.com
+    routes:
+      # SPA fallback — mọi route đều trả về index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html
