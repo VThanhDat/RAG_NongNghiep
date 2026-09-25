@@ -1,0 +1,3 @@
+# Dev/test dependencies — KHÔNG deploy lên Render
+-r requirements.txt
+pytest==8.3.4
