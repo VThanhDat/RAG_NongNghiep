@@ -5,11 +5,12 @@ services:
     runtime: python
     region: singapore          # gần VN nhất trên Render
     plan: free
-    pythonVersion: "3.11.9"    # pin cứng Python, không đọc runtime.txt
     rootDir: .
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn api.app.main:app --host 0.0.0.0 --port $PORT
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"        # pin Python version đúng cách trên Render
       - key: GEMINI_API_KEY
         sync: false            # nhập tay trên Render dashboard
       - key: COHERE_API_KEY
